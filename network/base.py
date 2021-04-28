@@ -21,12 +21,12 @@ class Network:
         #
         #
         # Placeholder variables to feed data into
-        self.inputs = tf.placeholder(tf.float32, [None, 784], name="Inputs")
-        self.correct_labels = tf.placeholder(tf.float32, [None, 10], name="CorrectLabels")
+        self.inputs = tf.compat.v1.placeholder(tf.float32, [None, 784], name="Inputs")
+        self.correct_labels = tf.compat.v1.placeholder(tf.float32, [None, 10], name="CorrectLabels")
 
         # Gives a single number instead of the one-hot representation we
         # expect as input
-        self._correct_labels_as_numbers = tf.argmax(self.correct_labels, axis=1, name="CorrectLabelsAsNumbers")
+        self._correct_labels_as_numbers = tf.argmax(input=self.correct_labels, axis=1, name="CorrectLabelsAsNumbers")
 
         #
         #
@@ -51,7 +51,7 @@ class Network:
         # "Hard" classification outputs are just a single number for
         # each input, representing the class the network thinks the number
         # most likely belongs to (e.g. "6").
-        self._classification_outputs = tf.argmax(self._raw_outputs, axis=1, name="ClassificationOutputs")
+        self._classification_outputs = tf.argmax(input=self._raw_outputs, axis=1, name="ClassificationOutputs")
 
         #
         #
@@ -62,15 +62,15 @@ class Network:
         )
         # Ratio of correct classifications out of all classifications
         # (currently the only metric this class offers).
-        self._accuracy = tf.reduce_mean(tf.cast(_correct_prediction, tf.float32), name="Accuracy")
+        self._accuracy = tf.reduce_mean(input_tensor=tf.cast(_correct_prediction, tf.float32), name="Accuracy")
 
         #
         #
         # Initialize learning
-        self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+        self._optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
 
         self._cross_entropy = tf.reduce_mean(
-            tf.nn.softmax_cross_entropy_with_logits(labels=self.correct_labels, logits=self._raw_outputs)
+            input_tensor=tf.nn.softmax_cross_entropy_with_logits(labels=tf.stop_gradient(self.correct_labels), logits=self._raw_outputs)
         )
         self._train_step = self._optimizer.minimize(self._cross_entropy)
 
@@ -118,7 +118,7 @@ class Network:
             shape = [num_out]
 
             if stddev:
-                initial = tf.truncated_normal(shape=shape, stddev=stddev, mean=mean if mean else 0.0)
+                initial = tf.random.truncated_normal(shape=shape, stddev=stddev, mean=mean if mean else 0.0)
             else:
                 initial = tf.constant(0.0, shape=shape)
 
@@ -141,7 +141,7 @@ class Network:
             shape = [num_in, num_out]
 
             if stddev:
-                initial = tf.truncated_normal(shape=shape, stddev=stddev, mean=mean if mean else 0.0)
+                initial = tf.random.truncated_normal(shape=shape, stddev=stddev, mean=mean if mean else 0.0)
             else:
                 initial = tf.constant(0.0, shape=shape)
 

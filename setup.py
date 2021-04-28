@@ -49,7 +49,7 @@ class TrainingSetup:
         if options.mode in ['ewc', 'l2']:
             vars += self.network._fisher_diagonal[:]
 
-        self.saver = tf.train.Saver(vars)
+        self.saver = tf.compat.v1.train.Saver(vars)
 
     def train_batch(self, sess):
         """Run a single step of the experiment.

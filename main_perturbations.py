@@ -11,10 +11,10 @@ if __name__ == "__main__":
     network = EWCNetwork()
     mnist = input_data.read_data_sets("./MNIST_data", one_hot=True)
 
-    sess = tf.InteractiveSession()
-    tf.global_variables_initializer().run()
+    sess = tf.compat.v1.InteractiveSession()
+    tf.compat.v1.global_variables_initializer().run()
 
-    saver = tf.train.Saver(network._var_list + network._fisher_diagonal)
+    saver = tf.compat.v1.train.Saver(network._var_list + network._fisher_diagonal)
     # Restore variables from checkpoint
     #print_tensors_in_checkpoint_file(file_name='./ewc1.ckpt', tensor_name='', all_tensors=True)
     saver.restore(sess, './ewc1.ckpt')
@@ -27,13 +27,13 @@ if __name__ == "__main__":
         for i in range(len(network._var_list)):
             var = network._var_list[i]
             fish = network._fisher_diagonal[i]
-            random_noise = tf.random_normal(shape=var.shape, mean=0.0, stddev=noise_stddev)
+            random_noise = tf.random.normal(shape=var.shape, mean=0.0, stddev=noise_stddev)
 
-            nullspace_noise = tf.where(tf.equal(fish, 0.0), random_noise, tf.zeros_like(random_noise))
+            nullspace_noise = tf.compat.v1.where(tf.equal(fish, 0.0), random_noise, tf.zeros_like(random_noise))
 
-            assign_op = tf.assign_add(var, random_noise)
+            assign_op = tf.compat.v1.assign_add(var, random_noise)
             uniform_assignations.append(assign_op)
-            nullspace_assignations.append(tf.assign_add(var, nullspace_noise))
+            nullspace_assignations.append(tf.compat.v1.assign_add(var, nullspace_noise))
 
         saver.restore(sess, './ewc1.ckpt')
         sess.run(uniform_assignations)

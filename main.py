@@ -40,8 +40,8 @@ def main(options):
 
     setup = TrainingSetup(options)
 
-    sess = tf.InteractiveSession()
-    tf.global_variables_initializer().run()
+    sess = tf.compat.v1.InteractiveSession()
+    tf.compat.v1.global_variables_initializer().run()
 
     run_training(sess, setup, options)
 

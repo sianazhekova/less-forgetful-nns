@@ -7,7 +7,7 @@ class ListOperationsMixin:
         """Set all tensors in vars to 0.0."""
         assignments = []
         for tensor in vars:
-            assignments.append(tf.assign(tensor, tf.zeros_like(tensor)))
+            assignments.append(tf.compat.v1.assign(tensor, tf.zeros_like(tensor)))
 
         sess.run(assignments)
 
@@ -17,7 +17,7 @@ class ListOperationsMixin:
         The tensors must have the same shape (or be broadcastable, I suppose)."""
         assignments = []
         for target, source in zip(to_vars, from_vars):
-            assignments.append(tf.assign(target, source))
+            assignments.append(tf.compat.v1.assign(target, source))
 
         sess.run(assignments)
 

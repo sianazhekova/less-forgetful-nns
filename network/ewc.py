@@ -55,7 +55,7 @@ class EWCNetwork(ListOperationsMixin, Network):
             trainable=False
         )
 
-        self._optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+        self._optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
 
         #
         #
@@ -87,7 +87,7 @@ class EWCNetwork(ListOperationsMixin, Network):
         """
         assignments = []
         for i in range(len(self._var_list)):
-            assignments.append(tf.assign(self._old_var_list[i], self._var_list[i]))
+            assignments.append(tf.compat.v1.assign(self._old_var_list[i], self._var_list[i]))
 
         sess.run(assignments)
         self._savepointed_vars_exist = True
@@ -102,7 +102,7 @@ class EWCNetwork(ListOperationsMixin, Network):
         Useful for demonstrating how the L2 penalty does not work."""
         assignments = []
         for tensor in self._fisher_diagonal:
-            assignments.append(tf.assign(tensor, tf.ones_like(tensor)))
+            assignments.append(tf.compat.v1.assign(tensor, tf.ones_like(tensor)))
 
         sess.run(assignments)
 
@@ -124,7 +124,7 @@ class EWCNetwork(ListOperationsMixin, Network):
             )
 
         # Sum of the above
-        self._ewc_penalty = tf.add_n([tf.reduce_sum(svd) for svd in self._squared_var_distances_scaled_by_fisher])
+        self._ewc_penalty = tf.add_n([tf.reduce_sum(input_tensor=svd) for svd in self._squared_var_distances_scaled_by_fisher])
 
         # (1/2) * lambda * sum of weighted squared distances
         self._ewc_cost = tf.add(
@@ -174,7 +174,7 @@ class EWCNetwork(ListOperationsMixin, Network):
         sess.run(divisions)
 
         assignations = [
-            tf.assign_add(self._fisher_diagonal[i], self._fisher_diagonal_computed[i])
+            tf.compat.v1.assign_add(self._fisher_diagonal[i], self._fisher_diagonal_computed[i])
             for i in range(len(self._var_list))
         ]
         sess.run(assignations)
@@ -187,12 +187,12 @@ class EWCNetwork(ListOperationsMixin, Network):
         # Only run this function once at the start
         assert self._fisher_delta is None
 
-        self._fisher_inputs = tf.placeholder(
+        self._fisher_inputs = tf.compat.v1.placeholder(
             tf.float32,
             [self.fisher_batch_size, 784],
             name="FisherInputs"
         )
-        self._fisher_correct_labels = tf.placeholder(
+        self._fisher_correct_labels = tf.compat.v1.placeholder(
             tf.float32,
             [self.fisher_batch_size, 10],
             name="FisherCorrectLabels"
@@ -234,11 +234,11 @@ class EWCNetwork(ListOperationsMixin, Network):
             raw_fisher_outputs.append(raw_outputs)
             log_likelihoods.append(log_likelihood)
 
-        batch_log_likelihood = tf.reduce_sum(log_likelihoods)
+        batch_log_likelihood = tf.reduce_sum(input_tensor=log_likelihoods)
 
         # This will contain self.fisher_batch_size elements, each of them
         # in the shape of self._var_list.
-        grads = [tf.gradients(batch_log_likelihood, vars) for vars in fisher_var_list]
+        grads = [tf.gradients(ys=batch_log_likelihood, xs=vars) for vars in fisher_var_list]
 
         # When we sum them up, we will form one self._var_list-shaped total
         # sum
@@ -263,6 +263,6 @@ class EWCNetwork(ListOperationsMixin, Network):
         )
 
         self._fisher_sum_up_operation = [
-            tf.assign_add(fisher_tmp, fisher_delta)
+            tf.compat.v1.assign_add(fisher_tmp, fisher_delta)
             for fisher_tmp, fisher_delta in zip(self._fisher_diagonal_computed, self._fisher_delta)
         ]
